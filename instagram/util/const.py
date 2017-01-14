@@ -1,0 +1,27 @@
+# coding=utf-8
+
+SEX_MALE = "MALE"
+SEX_FEMALE = 'FEMALE'
+SEX_UNDEFINED = "UNDEFINED"
+
+SEX_TYPE = (
+    (SEX_MALE, 'Male'),
+    (SEX_FEMALE, 'Female'),
+    (SEX_UNDEFINED, 'Undefined')
+)
+
+INS_CONTENT_PICTURE = "PICTURE"
+INS_CONTENT_VIDEO = "VIDEO"
+
+INS_CONTENT_TYPE = (
+    (INS_CONTENT_PICTURE, 'Picture'),
+    (INS_CONTENT_VIDEO, 'Video')
+)
+
+INS_COMMENT = "COMMENT"
+INS_LIKE = "LIKE"
+
+COMMENT_TYPE = (
+    (INS_COMMENT, 'Comment'),
+    (INS_LIKE, 'Like')
+)
