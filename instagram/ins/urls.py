@@ -6,3 +6,5 @@ from user import views
 
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet)   # ^users/{pk}/$ Name: 'user-detail'
+
+urlpatterns = router.urls

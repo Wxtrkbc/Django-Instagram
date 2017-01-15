@@ -39,10 +39,10 @@ class User(AbstractBaseUser, Time):
     phone = models.CharField(max_length=16, db_index=True, blank=True, default='')
     avatar = models.CharField(max_length=256)
     location = jsonfield.JSONField(blank=True, default={})
-    sex = models.CharField(max_length=12, choices=const.SEX_TYPE, default=const.SEX_UNDEFINED)
+    sex = models.CharField(max_length=12, choices=const.SEX_TYPES, default=const.SEX_UNDEFINED)
     brief = models.CharField(max_length=512, blank=True, default='')
-    followed = models.ManyToManyField('self', null=True, related_name='followers',
-                                      symmetrical=False)
+    level = models.CharField(max_length=12, choices=const.USER_LEVELS, default=const.USER_NORMAL)
+    followed = models.ManyToManyField('self', related_name='followers', symmetrical=False)
 
     USERNAME_FIELD = 'uuid'
     REQUIRED_FIELDS = []
@@ -57,10 +57,9 @@ class Ins(Time):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User)
     desc = models.CharField(max_length=1024, blank=True, default='')
-    type = models.CharField(max_length=12, choices=const.INS_CONTENT_TYPE,
+    type = models.CharField(max_length=12, choices=const.INS_CONTENT_TYPES,
                             default=const.INS_CONTENT_PICTURE)
     content = models.CharField(max_length=128)
-    comments = models.ForeignKey('Comment', null=True)
 
     def __str__(self):
         return self.desc
@@ -68,7 +67,7 @@ class Ins(Time):
 
 class Comment(models.Model):
     user = models.ForeignKey(User)
-    ins = models.ForeignKey(Ins)
-    type = models.CharField(max_length=12, choices=const.COMMENT_TYPE, default=const.INS_LIKE)
+    ins = models.ForeignKey(Ins, related_name="comments")
+    type = models.CharField(max_length=12, choices=const.COMMENT_TYPES, default=const.INS_LIKE)
     body = models.CharField(max_length=256, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
