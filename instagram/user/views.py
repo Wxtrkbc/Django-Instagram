@@ -1,7 +1,7 @@
 # coding=utf-8
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import list_route
 
 from util.schema import optional_dict, validate_value
 from util import const
@@ -17,7 +17,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    @detail_route(methods=['post'])
+    @list_route(methods=['post'])
     def register(self, request):
         """
         注册这里没有采用任何安全措施，本项目的重点不在这里

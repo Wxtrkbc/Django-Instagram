@@ -47,7 +47,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'util.exception.INSException'
+    'util.exception.INSExceptionMiddleware'
 ]
 
 ROOT_URLCONF = 'instagram.urls'
@@ -126,3 +126,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 API_VERSION = 'v1'
+
+AUTH_USER_MODEL = 'ins.User'

@@ -37,7 +37,7 @@ class User(AbstractBaseUser, Time):
     name = models.CharField(max_length=64, blank=True, default='')
     email = models.CharField(max_length=256, db_index=True, blank=True, default='')
     phone = models.CharField(max_length=16, db_index=True, blank=True, default='')
-    avatar = models.CharField(max_length=256)
+    avatar = models.CharField(max_length=256, blank=True, default='')
     location = jsonfield.JSONField(blank=True, default={})
     sex = models.CharField(max_length=12, choices=const.SEX_TYPES, default=const.SEX_UNDEFINED)
     brief = models.CharField(max_length=512, blank=True, default='')
@@ -47,7 +47,7 @@ class User(AbstractBaseUser, Time):
     USERNAME_FIELD = 'uuid'
     REQUIRED_FIELDS = []
 
-    object = INSUserManager()
+    objects = INSUserManager()
 
     def __str__(self):
         return '{} {}'.format(self.name, self.phone)
