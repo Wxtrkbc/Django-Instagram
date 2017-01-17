@@ -25,7 +25,6 @@ class INSUserManager(UserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
-        print(user.password, '_____')
         user.save(using=self._db)
         return user
 
@@ -35,7 +34,7 @@ class INSUserManager(UserManager):
 
 class User(AbstractBaseUser, Time):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=64, blank=True, default='')
+    name = models.CharField(max_length=64, unique=True, db_index=True)
     email = models.CharField(max_length=256, db_index=True, blank=True, default='')
     phone = models.CharField(max_length=16, db_index=True, blank=True, default='')
     avatar = models.CharField(max_length=256, blank=True, default='')
@@ -45,7 +44,7 @@ class User(AbstractBaseUser, Time):
     level = models.CharField(max_length=12, choices=const.USER_LEVELS, default=const.USER_NORMAL)
     followed = models.ManyToManyField('self', related_name='followers', symmetrical=False)
 
-    USERNAME_FIELD = 'uuid'
+    USERNAME_FIELD = 'name'
     REQUIRED_FIELDS = []
 
     objects = INSUserManager()

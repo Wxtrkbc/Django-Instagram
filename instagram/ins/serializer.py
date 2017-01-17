@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 
-from ins.models import User
-from util.schema import validate_value, optional_dict
-from util import const
+from util.schema import optional_dict
 from util import errors
 from util.exception import INSException
 
+User = get_user_model()
+
 
 class UserSerializer(serializers.ModelSerializer):
-    # avatar = serializers.CharField(required=False)
-
     class Meta:
-        fields = ('uuid', 'name', 'email', 'phone', 'avatar', 'location', 'sex', 'brief', 'level', 'password')
+        fields = ('uuid', 'name', 'email', 'phone', 'avatar', 'location', 'sex', 'brief', 'level')
         model = User
 
     def validate(self, attrs):
@@ -23,10 +22,14 @@ class UserSerializer(serializers.ModelSerializer):
             raise INSException(code=errors.ERR_ALREADY_REGISTER, message="User already register")
         return attrs
 
-    def _is_exist_user(self, data):
+    @staticmethod
+    def _is_exist_user(data):
         user = None
         if 'phone' in data:
             user = User.objects.filter(phone=data['phone'])
         if 'email' in data:
             user = User.objects.filter(email=data['email'])
         return True if user else False
+
+    def save(self, **kwargs):
+        User.objects.create_user(**self.validated_data)
