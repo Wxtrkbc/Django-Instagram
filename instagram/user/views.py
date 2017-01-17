@@ -17,22 +17,22 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    @list_route(methods=['post'])
-    def register(self, request):
-        """
-        注册这里没有采用任何安全措施，本项目的重点不在这里
-        这里只考虑最简单的情况,
-        """
-        user_keys = ['name', 'email', 'phone', 'password', 'avatar', 'location', 'sex']
-        user_data = optional_dict(request.data, user_keys)
-        if 'sex' in user_data:
-            validate_value(user_data['sex'], const.SEX_TYPES)
-
-        if _is_exist_user(user_data):
-            raise INSException(code=errors.ERR_ALREADY_REGISTER, message="User already register")
-        user = User.objects.create(**user_data)
-
-        return json_response(UserSerializer(user).data)
+    # @list_route(methods=['post'])
+    # def register(self, request):
+    #     """
+    #     注册这里没有采用任何安全措施，本项目的重点不在这里
+    #     这里只考虑最简单的情况,
+    #     """
+    #     user_keys = ['name', 'email', 'phone', 'password', 'avatar', 'location', 'sex']
+    #     user_data = optional_dict(request.data, user_keys)
+    #     if 'sex' in user_data:
+    #         validate_value(user_data['sex'], const.SEX_TYPES)
+    #
+    #     if _is_exist_user(user_data):
+    #         raise INSException(code=errors.ERR_ALREADY_REGISTER, message="User already register")
+    #     user = User.objects.create(**user_data)
+    #
+    #     return json_response(UserSerializer(user).data)
 
 
 def _is_exist_user(data):

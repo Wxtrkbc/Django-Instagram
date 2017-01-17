@@ -13,12 +13,8 @@ class UserSerializer(serializers.ModelSerializer):
     # avatar = serializers.CharField(required=False)
 
     class Meta:
-        fields = ('uuid', 'name', 'email', 'phone', 'avatar', 'location', 'sex', 'brief', 'level')
+        fields = ('uuid', 'name', 'email', 'phone', 'avatar', 'location', 'sex', 'brief', 'level', 'password')
         model = User
-
-    def validate_sex(self, value):
-        validate_value(value, const.SEX_TYPES)
-        return value
 
     def validate(self, attrs):
         user_keys = ['name', 'email', 'phone', 'password', 'avatar', 'location', 'sex']
