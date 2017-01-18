@@ -8,9 +8,9 @@ from util.errors import ERR_CODE_MAP
 
 class INSException(Exception):
     def __init__(self, code, message):
-        super(INSException, self).__init__(message)
         self.code = code
         self.message = message
+        super(INSException, self).__init__(message)
 
     def __str__(self):
         return 'code: {}, message: {}'.format(self.code, self.message)

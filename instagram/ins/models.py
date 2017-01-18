@@ -31,6 +31,12 @@ class INSUserManager(UserManager):
     def create_user(self, password=None, email=None, **extra_fields):
         return self._create_user(password, email, **extra_fields)
 
+    def get_followers(self, user):
+        return user.followers.all()
+
+    def get_following(self, user):
+        return user.followed.all()
+
 
 class User(AbstractBaseUser, Time):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -55,7 +61,7 @@ class User(AbstractBaseUser, Time):
 
 class Ins(Time):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, related_name='ins')
     desc = models.CharField(max_length=1024, blank=True, default='')
     type = models.CharField(max_length=12, choices=const.INS_CONTENT_TYPES,
                             default=const.INS_CONTENT_PICTURE)
@@ -71,3 +77,6 @@ class Comment(models.Model):
     type = models.CharField(max_length=12, choices=const.COMMENT_TYPES, default=const.INS_LIKE)
     body = models.CharField(max_length=256, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return '{}:{}'.format(self.type, self.body)
