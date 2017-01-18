@@ -47,3 +47,13 @@ class UserViewSet(viewsets.ModelViewSet):
         if page is not None:
             return self.get_paginated_response(page)
         return json_response(page)
+
+    @detail_route(methods=['get'])
+    def ins(self, request, name):
+        user = get_object_or_400(User, name=name)
+        ins = User.objects.get_ins(user)
+        resp = [{'content': item.content} for item in ins]
+        page = self.paginate_queryset(resp)
+        if page is not None:
+            return self.get_paginated_response(page)
+        return json_response(page)

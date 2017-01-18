@@ -32,10 +32,13 @@ class INSUserManager(UserManager):
         return self._create_user(password, email, **extra_fields)
 
     def get_followers(self, user):
-        return user.followers.all()
+        return user.followers.all().order_by('created_at')
 
     def get_following(self, user):
-        return user.followed.all()
+        return user.followed.all().order_by('created_at')
+
+    def get_ins(self, user):
+        return user.ins.all().order_by('created_at')
 
 
 class User(AbstractBaseUser, Time):

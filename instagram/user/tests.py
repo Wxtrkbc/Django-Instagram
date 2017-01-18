@@ -23,7 +23,7 @@ class TestUser(TestCase):
         Ins.objects.create(user=user1, content='ins2.path')
         # print(user1.followed, user1.followers)
 
-    def _test_register(self):
+    def test_register(self):
         url = reverse("user-list")
         data = {
             'name': 'kobe',
@@ -37,7 +37,7 @@ class TestUser(TestCase):
         user = User.objects.filter(name='kobe').first()
         self.assertEqual(user.check_password('123456'), True)
 
-    def _test_login(self):
+    def test_login(self):
         url = reverse("user-login")
         data = {
             'username': 'jason',
@@ -63,3 +63,8 @@ class TestUser(TestCase):
         url = reverse("user-detail", args=[user.name])
         response = self.client.get(url)
         self.assertEqual(response.json()['followers'], 1)
+
+    def test_user_ins(self):
+        url = reverse("user-ins", args=['jason'])
+        response = self.client.get(url)
+        print(response.json())

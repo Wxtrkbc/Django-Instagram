@@ -17,9 +17,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (
             'uuid', 'name', 'email', 'phone', 'avatar', 'location', 'sex', 'brief', 'level',
-            'password', 'followed', 'followers', 'ins')
+            'password', 'followed', 'followers')
         model = User
-        read_only_fields = ('followed', 'followers', 'ins')
+        read_only_fields = ('followed', 'followers')
 
     def validate(self, attrs):
         allowed_keys = ['name', 'email', 'phone', 'password', 'avatar', 'location', 'sex']
@@ -42,7 +42,7 @@ class UserSerializer(serializers.ModelSerializer):
         User.objects.create_user(**self.validated_data)
 
     def get_followed(self, obj):
-        return obj.followed.count() if obj.followed else 0
+        return obj.followed.count() if isinstance(obj, User) and obj.followed else 0
 
     def get_followers(self, obj):
-        return obj.followers.count() if obj.followers else 0
+        return obj.followers.count() if isinstance(obj, User) and obj.followers else 0
