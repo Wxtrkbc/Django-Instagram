@@ -5,7 +5,8 @@ from django.urls import reverse
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
-from ins.models import Ins
+from ins.models import Ins, Comment
+from util import const
 
 User = get_user_model()
 
@@ -16,12 +17,17 @@ class TestUser(TestCase):
         user2 = User.objects.create_user(name='lj', password='123', avatar='x1.path')
         user3 = User.objects.create_user(name='tom', password='123', avatar='x2.path')
         user4 = User.objects.create_user(name='arc', password='123', avatar='x3.path')
+
         user1.followed.add(*[user2, user3, user4])
         user1.followers.add(user2)
 
-        Ins.objects.create(user=user1, content='ins1.path')
+        in1 = Ins.objects.create(user=user1, content='ins1.path')
         Ins.objects.create(user=user1, content='ins2.path')
-        # print(user1.followed, user1.followers)
+
+        Comment.objects.create(user=user2, ins=in1, body='nice', type=const.INS_COMMENT)
+        Comment.objects.create(user=user2, ins=in1)
+        Comment.objects.create(user=user3, ins=in1)
+        Comment.objects.create(user=user4, ins=in1)
 
     def test_register(self):
         url = reverse("user-list")
@@ -67,4 +73,4 @@ class TestUser(TestCase):
     def test_user_ins(self):
         url = reverse("user-ins", args=['jason'])
         response = self.client.get(url)
-        print(response.json())
+        self.assertEqual(response.json()['results'][0]['comments_count'], 1)

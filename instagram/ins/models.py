@@ -5,8 +5,8 @@ import jsonfield
 
 from django.db import models
 from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.auth.models import UserManager
 
+from ins.manager import INSUserManager, InsManager
 from util import const
 
 
@@ -16,29 +16,6 @@ class Time(models.Model):
 
     class Meta:
         abstract = True
-
-
-class INSUserManager(UserManager):
-    use_in_migrations = True
-
-    def _create_user(self, password, email, **extra_fields):
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_user(self, password=None, email=None, **extra_fields):
-        return self._create_user(password, email, **extra_fields)
-
-    def get_followers(self, user):
-        return user.followers.all().order_by('created_at')
-
-    def get_following(self, user):
-        return user.followed.all().order_by('created_at')
-
-    def get_ins(self, user):
-        return user.ins.all().order_by('created_at')
 
 
 class User(AbstractBaseUser, Time):
@@ -69,6 +46,9 @@ class Ins(Time):
     type = models.CharField(max_length=12, choices=const.INS_CONTENT_TYPES,
                             default=const.INS_CONTENT_PICTURE)
     content = models.CharField(max_length=128)
+
+    objects = models.Manager()
+    ins_objects = InsManager()
 
     def __str__(self):
         return self.desc
