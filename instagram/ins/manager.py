@@ -41,3 +41,8 @@ class InsManager(models.Manager):
         return ins.comments.filter(type=const.INS_COMMENT).values('user', 'body', 'id',
                                                                   'created_at').order_by(
             '-created_at')[0:settings.LATEST_COMMENTS_NUM]
+
+    def get_comments(self, ins):
+        return ins.comments.filter(type=const.INS_COMMENT).values('user', 'body', 'id',
+                                                                  'created_at').order_by(
+            '-created_at')

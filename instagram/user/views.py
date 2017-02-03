@@ -2,6 +2,7 @@
 
 from django.contrib.auth import get_user_model, authenticate, login
 from rest_framework import viewsets, status
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route, detail_route
 
 from util.response import error_response, empty_response, json_response
@@ -16,6 +17,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = User.USERNAME_FIELD
+    authentication_classes = (SessionAuthentication,)
 
     @list_route(methods=['post'])
     def login(self, request):

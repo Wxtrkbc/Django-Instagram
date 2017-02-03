@@ -1,4 +1,3 @@
-
 from django.urls import reverse
 from django.test import TestCase
 from django.contrib.auth import get_user_model
@@ -35,3 +34,11 @@ class TestIns(TestCase):
         # url = reverse('ins-get_ins_info', args=[in1.uuid])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+    def test_ins_comment(self):
+        in1 = Ins.objects.filter(content='ins1.path').first()
+        url = reverse('ins-comments', args=[in1.uuid])
+        response = self.client.get(url)
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], 1)
