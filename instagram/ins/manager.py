@@ -1,5 +1,8 @@
+# coding: utf-8
+
 from django.db import models
 from django.contrib.auth.models import UserManager
+from django.conf import settings
 
 from util import const
 
@@ -18,13 +21,13 @@ class INSUserManager(UserManager):
         return self._create_user(password, email, **extra_fields)
 
     def get_followers(self, user):
-        return user.followers.values('name', 'avatar').order_by('created_at')
+        return user.followers.values('name', 'avatar').order_by('-created_at')
 
     def get_following(self, user):
-        return user.followed.values('name', 'avatar').order_by('created_at')
+        return user.followed.values('name', 'avatar').order_by('-created_at')
 
     def get_ins(self, user):
-        return user.ins.all().order_by('created_at')
+        return user.ins.all().order_by('-created_at')
 
 
 class InsManager(models.Manager):
@@ -34,5 +37,7 @@ class InsManager(models.Manager):
     def get_likes_count(self, ins):
         return ins.comments.filter(type=const.INS_LIKE).count()
 
-    def get_comments(self, ins):
-        pass
+    def get_last_comments(self, ins):
+        return ins.comments.filter(type=const.INS_COMMENT).values('user', 'body', 'id',
+                                                                  'created_at').order_by(
+            '-created_at')[0:settings.LATEST_COMMENTS_NUM]

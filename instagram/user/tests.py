@@ -13,21 +13,24 @@ User = get_user_model()
 
 class TestUser(TestCase):
     def setUp(self):
+
+        # init user
         user1 = User.objects.create_user(name='jason', password='123456')
         user2 = User.objects.create_user(name='lj', password='123', avatar='x1.path')
         user3 = User.objects.create_user(name='tom', password='123', avatar='x2.path')
         user4 = User.objects.create_user(name='arc', password='123', avatar='x3.path')
-
         user1.followed.add(*[user2, user3, user4])
         user1.followers.add(user2)
 
+        # init ins
         in1 = Ins.objects.create(user=user1, content='ins1.path')
         Ins.objects.create(user=user1, content='ins2.path')
 
-        Comment.objects.create(user=user2, ins=in1, body='nice', type=const.INS_COMMENT)
+        # init comment
         Comment.objects.create(user=user2, ins=in1)
         Comment.objects.create(user=user3, ins=in1)
         Comment.objects.create(user=user4, ins=in1)
+        Comment.objects.create(user=user2, ins=in1, body='nice', type=const.INS_COMMENT)
 
     def test_register(self):
         url = reverse("user-list")
@@ -73,4 +76,4 @@ class TestUser(TestCase):
     def test_user_ins(self):
         url = reverse("user-ins", args=['jason'])
         response = self.client.get(url)
-        self.assertEqual(response.json()['results'][0]['comments_count'], 1)
+        self.assertEqual(response.json()['results'][0]['comments_count'], 0)

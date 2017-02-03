@@ -128,3 +128,5 @@ STATIC_URL = '/static/'
 API_VERSION = 'v1'
 
 AUTH_USER_MODEL = 'ins.User'
+
+LATEST_COMMENTS_NUM = 10
