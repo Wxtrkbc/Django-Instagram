@@ -3,6 +3,7 @@
 from django.contrib.auth import get_user_model, authenticate, login
 from rest_framework import viewsets, status
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import list_route, detail_route
 
 from util.response import error_response, empty_response, json_response
@@ -50,7 +51,19 @@ class UserViewSet(viewsets.ModelViewSet):
             return self.get_paginated_response(page)
         return json_response(page)
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=['patch'], permission_classes=[IsAuthenticated])
+    def follow(self, request, name):
+        target_user = get_object_or_400(User, name=name)
+        request.user.followed.add(target_user)
+        return empty_response()
+
+    @detail_route(methods=['patch'], permission_classes=[IsAuthenticated])
+    def unfollow(self, request, name):
+        target_user = get_object_or_400(User, name=name)
+        request.user.followed.remove(target_user)
+        return empty_response()
+
+    @detail_route(methods=['get'], permission_classes=[IsAuthenticated])
     def ins(self, request, name):
         user = get_object_or_400(User, name=name)
         ins = User.objects.get_ins(user)

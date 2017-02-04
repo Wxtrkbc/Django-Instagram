@@ -7,13 +7,13 @@ from django.contrib.auth import get_user_model
 
 from ins.models import Ins, Comment
 from util import const
+from app.tests import test_login
 
 User = get_user_model()
 
 
 class TestUser(TestCase):
     def setUp(self):
-
         # init user
         user1 = User.objects.create_user(name='jason', password='123456')
         user2 = User.objects.create_user(name='lj', password='123', avatar='x1.path')
@@ -46,7 +46,7 @@ class TestUser(TestCase):
         user = User.objects.filter(name='kobe').first()
         self.assertEqual(user.check_password('123456'), True)
 
-    def test_login(self):
+    def test_login_(self):
         url = reverse("user-login")
         data = {
             'username': 'jason',
@@ -67,12 +67,31 @@ class TestUser(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.json()['count'], 3)
 
+    @test_login
+    def test_follow(self):
+        url = reverse("user-unfollow", args=['tom'])
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, 204)
+
+        url = reverse("user-following", args=['jason'])
+        response1 = self.client.get(url)
+        self.assertEqual(response1.json()['count'], 2)
+
+        url = reverse("user-follow", args=['tom'])
+        response2 = self.client.patch(url)
+        self.assertEqual(response2.status_code, 204)
+
+        url = reverse("user-following", args=['jason'])
+        response3 = self.client.get(url)
+        self.assertEqual(response3.json()['count'], 3)
+
     def test_user_profile(self):
         user = User.objects.get(name='jason')
         url = reverse("user-detail", args=[user.name])
         response = self.client.get(url)
         self.assertEqual(response.json()['followers'], 1)
 
+    @test_login
     def test_user_ins(self):
         url = reverse("user-ins", args=['jason'])
         response = self.client.get(url)
