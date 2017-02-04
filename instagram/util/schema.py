@@ -36,12 +36,27 @@ def check_params_keys(params, keys, exclusion=False):
                        code=errors.ERR_MISSING_QUERY_PARAMS)
 
 
-def optional_dict(data, keys):
-    return {k: data[k] for k in data if k in keys}
-
-
 def check_missing_keys(data, keys):
     return [key for key in keys if key not in data]
+
+
+def check_keys(data, keys):
+    if isinstance(data, list):
+        for item in data:
+            sub_check_keys(item, keys)
+    else:
+        sub_check_keys(data, keys)
+
+
+def sub_check_keys(data, keys):
+    for key in data:
+        if key not in keys:
+            raise INSException(code=errors.ERR_INVALID_VALUE,
+                               message='Error required field in request body: {}'.format(key))
+
+
+def optional_dict(data, keys):
+    return {k: data[k] for k in data if k in keys}
 
 
 def get_object_or_400(klass, *args, **kwargs):
