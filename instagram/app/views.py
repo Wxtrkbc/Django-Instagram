@@ -7,7 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 from ins.models import Ins
 from ins.serializer import InsSerializer, CommentSerializer
 from util.schema import get_object_or_400, check_keys
-from util.response import json_response
+from util.response import json_response, empty_response
+from util.exception import INSException
+from util import errors
 from app.func import format_ins_detail
 
 
@@ -42,3 +44,14 @@ class InsViewSet(viewsets.ModelViewSet):
         data.update({'user': request.user})
         ins = Ins.objects.create(**data)
         return json_response(InsSerializer(ins).data)
+
+    @transaction.atomic
+    def delete_ins(self, request, uuid):
+        # ins = get_object_or_400(Ins, uuid=uuid)
+        ins = Ins.objects.filter(uuid=uuid).first()
+        if not ins:
+            return empty_response()
+        if ins.user != request.user:
+            raise INSException(code=errors.ERR_UNSUPPORTED, message='This INS is not for you')
+        ins.delete()
+        return empty_response()

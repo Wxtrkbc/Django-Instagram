@@ -15,9 +15,11 @@ def test_login(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         self = args[0]
-        user = User.objects.first()
+        # user = User.objects.first()
+        user = User.objects.get(name='jason')
         self.client.force_login(user)
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -45,7 +47,6 @@ class TestIns(TestCase):
     def test_ins_detail(self):
         in1 = Ins.objects.filter(content='ins1.path').first()
         url = reverse('ins-detail', args=[in1.uuid])
-        # url = reverse('ins-get_ins_info', args=[in1.uuid])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
@@ -59,7 +60,6 @@ class TestIns(TestCase):
 
     @test_login
     def test_create_ins(self):
-
         data = json.dumps({
             'desc': 'in1',
             'content': 'in1.path'
@@ -69,3 +69,10 @@ class TestIns(TestCase):
 
         response = self.client.post(url, data, content_type="application/json")
         self.assertEqual(response.json()['desc'], 'in1')
+
+    @test_login
+    def test_delete_ins(self):
+        in1 = Ins.objects.filter(content='ins1.path').first()
+        url = reverse('delete-ins', args=[in1.uuid])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
