@@ -4,12 +4,12 @@ from rest_framework.decorators import detail_route
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from ins.models import Ins
+from ins.models import Ins, Comment
 from ins.serializer import InsSerializer, CommentSerializer
-from util.schema import get_object_or_400, check_keys
+from util.schema import get_object_or_400, check_keys, validate_value
 from util.response import json_response, empty_response
 from util.exception import INSException
-from util import errors
+from util import errors, const
 from app.func import format_ins_detail
 
 
@@ -27,14 +27,26 @@ class InsViewSet(viewsets.ModelViewSet):
         ins_detail = format_ins_detail(ins)
         return json_response(ins_detail)
 
-    @detail_route(methods=['get'])
+    @transaction.atomic
+    @detail_route(methods=['get', 'post'])
     def comments(self, request, pk):
+        # globals()['_comments_{}'.format(request.method.lower())](self, request, pk)
         ins = get_object_or_400(Ins, uuid=pk)
-        comments = Ins.ins_objects.get_comments(ins)
-        page = self.paginate_queryset(CommentSerializer(comments, many=True).data)
-        if page is not None:
-            return self.get_paginated_response(page)
-        return json_response(page)
+        if request.method == 'GET':
+            comments = Ins.ins_objects.get_comments(ins)
+            page = self.paginate_queryset(CommentSerializer(comments, many=True).data)
+            if page is not None:
+                return self.get_paginated_response(page)
+            return json_response(page)
+        else:
+            data = request.data
+            comment_keys = ['type', 'body']
+            check_keys(data, comment_keys)
+            if 'type' in data:
+                validate_value(data['type'], const.COMMENT_TYPES)
+            data.update({'user': request.user, 'ins': ins})
+            comment = Comment.objects.create(**data)
+            return json_response(CommentSerializer(comment).data)
 
     @transaction.atomic
     def create_ins(self, request):

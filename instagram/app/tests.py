@@ -59,6 +59,18 @@ class TestIns(TestCase):
         self.assertEqual(response.json()['count'], 1)
 
     @test_login
+    def test_create_ins_comment(self):
+        in1 = Ins.objects.filter(content='ins1.path').first()
+        url = reverse('ins-comments', args=[in1.uuid])
+        data = json.dumps({
+            'type': const.INS_COMMENT,
+            'body': 'nice'
+        })
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['body'], 'nice')
+
+    @test_login
     def test_create_ins(self):
         data = json.dumps({
             'desc': 'in1',
