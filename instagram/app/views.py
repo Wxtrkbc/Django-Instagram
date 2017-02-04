@@ -1,16 +1,17 @@
 from django.db import transaction
-from rest_framework import viewsets
-from rest_framework.decorators import detail_route
+from rest_framework import viewsets, filters
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import detail_route
 from rest_framework.permissions import IsAuthenticated
 
+from app.func import format_ins_detail
+from ins.forms import InsFilter
 from ins.models import Ins, Comment
 from ins.serializer import InsSerializer, CommentSerializer
-from util.schema import get_object_or_400, check_keys, validate_value
-from util.response import json_response, empty_response
-from util.exception import INSException
 from util import errors, const
-from app.func import format_ins_detail
+from util.exception import INSException
+from util.response import json_response, empty_response
+from util.schema import get_object_or_400, check_keys, validate_value
 
 
 class InsViewSet(viewsets.ModelViewSet):
@@ -20,6 +21,11 @@ class InsViewSet(viewsets.ModelViewSet):
 
     permission_classes = (IsAuthenticated,)
     authentication_classes = (SessionAuthentication,)
+
+    filter_backends = (
+        filters.DjangoFilterBackend,
+    )
+    filter_class = InsFilter
 
     @detail_route(methods=['get'])
     def detail(self, request, pk):

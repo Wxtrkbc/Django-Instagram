@@ -1,15 +1,16 @@
 # coding=utf-8
 
 from django.contrib.auth import get_user_model, authenticate, login
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import list_route, detail_route
+from rest_framework.permissions import IsAuthenticated
 
-from util.response import error_response, empty_response, json_response
-from util.schema import get_object_or_400, check_body_keys
+from ins.forms import UserFilter
 from ins.serializer import UserSerializer
 from user.func import format_ins
+from util.response import error_response, empty_response, json_response
+from util.schema import get_object_or_400, check_body_keys
 
 User = get_user_model()
 
@@ -19,6 +20,16 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     lookup_field = User.USERNAME_FIELD
     authentication_classes = (SessionAuthentication,)
+
+    filter_backends = (
+        filters.DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    )
+
+    filter_class = UserFilter
+    search_fields = ('name', )
+    ordering_fields = ('created_at', 'name', )
 
     @list_route(methods=['post'])
     def login(self, request):

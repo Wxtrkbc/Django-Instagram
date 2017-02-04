@@ -74,7 +74,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': int(os.getenv('PAGE_SIZE', 12))
+    'PAGE_SIZE': int(os.getenv('PAGE_SIZE', 12)),
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
 }
 
 WSGI_APPLICATION = 'instagram.wsgi.application'

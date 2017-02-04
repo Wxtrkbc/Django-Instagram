@@ -16,7 +16,8 @@ class TestUser(TestCase):
     def setUp(self):
         # init user
         user1 = User.objects.create_user(name='jason', password='123456')
-        user2 = User.objects.create_user(name='lj', password='123', avatar='x1.path')
+        user2 = User.objects.create_user(name='lj', password='123', avatar='x1.path',
+                                         level=const.USER_STAR)
         user3 = User.objects.create_user(name='tom', password='123', avatar='x2.path')
         user4 = User.objects.create_user(name='arc', password='123', avatar='x3.path')
         user1.followed.add(*[user2, user3, user4])
@@ -96,3 +97,15 @@ class TestUser(TestCase):
         url = reverse("user-ins", args=['jason'])
         response = self.client.get(url)
         self.assertEqual(response.json()['results'][0]['comments_count'], 0)
+
+    def test_user_list(self):
+        url = reverse("user-list")
+
+        response = self.client.get(url, {"level": const.USER_NORMAL})
+        self.assertEqual(response.json()['count'], 3)
+
+        response1 = self.client.get(url, {'created_at_min': '2017-3-20'})
+        self.assertEqual(response1.json()['count'], 0)
+
+        response2 = self.client.get(url, {'search': 'ja'})
+        self.assertEqual(response2.json()['results'][0]['name'], 'jason')
