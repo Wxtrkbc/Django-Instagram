@@ -3,3 +3,4 @@ djangorestframework==3.4.0
 jsonfield
 django-filter
 redis
+pika

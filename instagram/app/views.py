@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from django.db import transaction
 from rest_framework import viewsets, filters
 from rest_framework.authentication import SessionAuthentication
@@ -12,6 +14,7 @@ from util import errors, const
 from util.exception import INSException
 from util.response import json_response, empty_response
 from util.schema import get_object_or_400, check_keys, validate_value
+from infrastructure.queue_cl import QueueManager
 
 
 class InsViewSet(viewsets.ModelViewSet):
@@ -59,9 +62,15 @@ class InsViewSet(viewsets.ModelViewSet):
         data = request.data
         ins_keys = ['desc', 'content', 'type']
         check_keys(data, ins_keys)
-        data.update({'user': request.user})
-        ins = Ins.objects.create(**data)
-        return json_response(InsSerializer(ins).data)
+        data.update({'user': request.user.name})
+
+        # 这里直接将数据放回给前端，然后将ins数据发送到队列中去
+        # data.update({'user': request.user})
+        # ins = Ins.objects.create(**data)
+        # return json_response(InsSerializer(ins).data)
+        with QueueManager() as queue_manager:
+            queue_manager.publish_ins(data=data)
+        return json_response(data)
 
     @transaction.atomic
     def delete_ins(self, request, uuid):
