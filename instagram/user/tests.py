@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from ins.models import Ins, Comment
 from util import const
 from app.tests import test_login
+from infrastructure.redis_cl import Redis
 
 User = get_user_model()
 
@@ -56,6 +57,12 @@ class TestUser(TestCase):
 
         response = self.client.post(url, json.dumps(data), content_type="application/json")
         self.assertEqual(response.status_code, 204)
+
+        # test for redis
+        redis = Redis.get_redis()
+        user = User.objects.get(name='jason')
+        self.assertEqual(str(redis.get('active_user_{}'.format(user.uuid)), encoding='utf-8'),
+                         str(user.uuid))
 
     def test_followers(self):
         url = reverse("user-followers", args=['jason'])

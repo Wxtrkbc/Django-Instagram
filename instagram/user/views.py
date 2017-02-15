@@ -1,6 +1,7 @@
 # coding=utf-8
 
 from django.contrib.auth import get_user_model, authenticate, login
+from django.conf import settings
 from rest_framework import viewsets, status, filters
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route, detail_route
@@ -11,6 +12,7 @@ from ins.serializer import UserSerializer
 from user.func import format_ins
 from util.response import error_response, empty_response, json_response
 from util.schema import get_object_or_400, check_body_keys
+from infrastructure.redis_cl import Redis
 
 User = get_user_model()
 
@@ -28,8 +30,8 @@ class UserViewSet(viewsets.ModelViewSet):
     )
 
     filter_class = UserFilter
-    search_fields = ('name', )
-    ordering_fields = ('created_at', 'name', )
+    search_fields = ('name',)
+    ordering_fields = ('created_at', 'name',)
 
     @list_route(methods=['post'])
     def login(self, request):
@@ -40,6 +42,11 @@ class UserViewSet(viewsets.ModelViewSet):
         user = authenticate(username=username, password=password)
         if user and user.is_active:
             login(request, user)
+
+            # target user as active user
+            redis = Redis.get_redis()
+            redis.set('active_user_{}'.format(user.uuid), str(user.uuid),
+                      ex=settings.USER_ACTIVE_EX)
         else:
             return error_response('Login fail', status=status.HTTP_401_UNAUTHORIZED)
         return empty_response()

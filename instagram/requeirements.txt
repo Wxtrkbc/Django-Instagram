@@ -2,3 +2,4 @@ Django==1.10
 djangorestframework==3.4.0
 jsonfield
 django-filter
+redis

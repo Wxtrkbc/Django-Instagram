@@ -131,3 +131,12 @@ API_VERSION = 'v1'
 AUTH_USER_MODEL = 'ins.User'
 
 LATEST_COMMENTS_NUM = 10
+
+REDIS_CONNECT_DICT = {
+    'host': '127.0.0.1',
+    'port': '6379',
+}
+
+QUEUE_HOST = '127.0.0.1'
+
+USER_ACTIVE_EX = 3600 * 24
