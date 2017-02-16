@@ -26,6 +26,25 @@ class QueueManager:
             )
         )
 
+    def callback(self, ch, method, properties, body):
+        self.followed_ins.append(json.loads(str(body, encoding="utf-8")))
+
+    def get_user_followed_ins(self, queue_name):
+        self.followed_ins = []
+        self.channel.queue_declare(queue=queue_name)
+        self.channel.basic_consume(self.callback,
+                                   queue=queue_name,
+                                   no_ack=True)
+
+        self.connection.process_data_events()
+        self.connection._flush_output()
+        self.close()
+        return self.followed_ins
+
+    def get_user_followed_ins_count(self, queue_name):
+        queue = self.channel.queue_declare(queue=queue_name)
+        return queue.method.message_count
+
     def close(self):
         return self.connection.close()
 

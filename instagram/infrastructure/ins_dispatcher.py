@@ -70,5 +70,51 @@ class INSDispatcher:
       直到它已经处理了上一条消息并且作出了响应
 
 
-上述没有涉及到交换机的概念
+## 交换机
+
+    - 扇型交换机（fanout）
+    ```
+    channel.exchange_declare(exchange='logs', type='fanout')
+
+    channel.basic_publish(exchange='logs',
+                      routing_key='',
+                      body=message)
+
+    ```
+
+    # 手动创建一个随机的队列名
+    result = channel.queue_declare()
+    通过result.method.queue 获得已经生成的随机队列名
+
+    # 与消费者（consumer）断开连接的时候，这个队列应当被立即删除
+    result = channel.queue_declare(exclusive=True)
+
+    交换器和队列之间的联系我们称之为绑定（binding）
+    channel.queue_bind(exchange='logs', queue=result.method.queue)
+
+    - 路由
+        - 绑定键（binding key）
+          绑定键的意义取决于交换机（exchange）的类型,扇型交换机会忽略这个值。
+        ```
+        channel.queue_bind(exchange=exchange_name,
+                   queue=queue_name,
+                   routing_key='black')
+        ```
+    - 直接交换机
+     channel.exchange_declare(exchange='direct_logs', type='direct')
+
+     channel.basic_publish(exchange='direct_logs',
+                      routing_key=severity,
+                      body=message)
+
+    - 主题交换机
+
+    主题交换机可以表现出跟其他交换机类似的行为
+
+    当一个队列的绑定键为 "#"的时候，这个队列将会无视消息的路由键，接收所有的消息。
+
+    当 * 和 # 这两个特殊字符都未在绑定键中出现的时候，此时主题交换机就拥有的直连交换机的行为。
+
+
+
 """
