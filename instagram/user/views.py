@@ -13,6 +13,7 @@ from user.func import format_ins
 from util.response import error_response, empty_response, json_response
 from util.schema import get_object_or_400, check_body_keys
 from infrastructure.redis_cl import Redis
+from infrastructure.queue_cl import QueueManager
 
 User = get_user_model()
 
@@ -81,11 +82,25 @@ class UserViewSet(viewsets.ModelViewSet):
         request.user.followed.remove(target_user)
         return empty_response()
 
+    # 获取自己的ins和他人的ins
     @detail_route(methods=['get'], permission_classes=[IsAuthenticated])
     def ins(self, request, name):
         user = get_object_or_400(User, name=name)
         ins = User.objects.get_ins(user)
         page = self.paginate_queryset(format_ins(ins))
+        if page is not None:
+            return self.get_paginated_response(page)
+        return json_response(page)
+
+    # 个人主页展示自己关注用户的Ins（前提自己要活跃才能获取到相应的内容）
+    # @detail_route(methods=['get'], permission_classes=[IsAuthenticated])
+    @detail_route(methods=['get'])
+    def followedins(self, request, name):
+        user = get_object_or_400(User, name=name)
+        queue_manager = QueueManager()
+        queue_name = 'uid_{}'.format(user.uuid)
+        ins_list = queue_manager.get_user_followed_ins(queue_name)
+        page = self.paginate_queryset(ins_list)
         if page is not None:
             return self.get_paginated_response(page)
         return json_response(page)

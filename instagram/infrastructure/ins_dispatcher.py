@@ -1,9 +1,12 @@
 # coding: utf-8
 
 import json
+# import django
+# import os
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "instagram.settings")
+# django.setup()
 
 from django.shortcuts import get_object_or_404
-
 from infrastructure.queue_cl import QueueManager
 from infrastructure.redis_cl import Redis
 from ins.models import Ins, User
@@ -29,6 +32,7 @@ class INSDispatcher:
 
     def push_followers(self, user, ins_info):
         followers = user.followers.all()
+        ins_info['uuid'] = str(ins_info['uuid'])
         for people in followers:
             queue_name = 'uid_{}'.format(people.uuid)
             if self.redis.get('active_user_{}'.format(people.uuid)):
@@ -47,9 +51,12 @@ class INSDispatcher:
     def listen_ins(self):
         self.queue_manager.channel.queue_declare(queue='ins_publish', durable=True)
         self.queue_manager.channel.basic_qos(prefetch_count=1)
-        self.queue_manager.basic_consum(self.callback, queue='ins_publish', no_ack=False)
+        self.queue_manager.channel.basic_consume(self.callback, queue='ins_publish', no_ack=False)
         self.queue_manager.channel.start_consuming()
 
+
+ins_dispatcher = INSDispatcher()
+ins_dispatcher.listen_ins()
 
 """
  - durable  需要和前面发布消息保持消息持久化一起来使用

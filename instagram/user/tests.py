@@ -4,6 +4,7 @@ import json
 from django.urls import reverse
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from unittest import skip
 
 from ins.models import Ins, Comment
 from util import const
@@ -116,3 +117,32 @@ class TestUser(TestCase):
 
         response2 = self.client.get(url, {'search': 'ja'})
         self.assertEqual(response2.json()['results'][0]['name'], 'jason')
+
+    @skip
+    def test_followed_ins(self):
+
+        login_url = reverse("user-login")
+        data = {
+            'username': 'jason',
+            'password': '123456'
+        }
+        self.client.post(login_url, json.dumps(data), content_type="application/json")
+
+        login_url = reverse("user-login")
+        data = {
+            'username': 'lj',
+            'password': '123'
+        }
+        self.client.post(login_url, json.dumps(data), content_type="application/json")
+
+        post_url = reverse("create-ins")
+        data = json.dumps({
+            'desc': 'in1',
+            'content': 'in1.path'
+        })
+        self.client.post(post_url, data, content_type="application/json")
+
+        get_url = reverse("user-followedins", args=['jason'])
+
+        response = self.client.get(get_url)
+        self.assertEqual(response.status_code, 200)

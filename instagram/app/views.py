@@ -64,8 +64,6 @@ class InsViewSet(viewsets.ModelViewSet):
         check_keys(data, ins_keys)
         data.update({'user': request.user.name})
 
-        # 这里直接将数据放回给前端，然后将ins数据发送到队列中去
-
         # data.update({'user': request.user})
         # ins = Ins.objects.create(**data)
         # return json_response(InsSerializer(ins).data)

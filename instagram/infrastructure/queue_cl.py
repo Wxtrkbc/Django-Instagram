@@ -19,7 +19,7 @@ class QueueManager:
         # routing_key ---> queue name
         self.channel.basic_publish(
             exchange='',  # 默认或者匿名交换机，消息将会根据指定的 routing_key 分发到指定的队列
-            routing_key='publish_ins',
+            routing_key='ins_publish',
             body=json.dumps(data),
             properties=pika.BasicProperties(
                 delivery_mode=2,                # make message persistent
