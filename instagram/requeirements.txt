@@ -9,5 +9,6 @@ kombu==4.0.2
 pika==0.10.0
 pytz==2016.10
 redis==2.10.5
+requests==2.13.0
 tornado==4.4.2
 vine==1.1.3

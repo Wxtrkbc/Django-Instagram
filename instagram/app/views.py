@@ -1,10 +1,17 @@
 # coding: utf-8
 
+import hashlib
 from django.db import transaction
+from django.contrib.auth import get_user_model
+from django.core.signing import TimestampSigner
+from django.conf import settings
+
+import requests
 from rest_framework import viewsets, filters
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import detail_route
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 
 from app.func import format_ins_detail
 from ins.forms import InsFilter
@@ -17,7 +24,67 @@ from util.schema import get_object_or_400, check_keys, validate_value
 from infrastructure.queue_cl import QueueManager
 
 
-class InsViewSet(viewsets.ModelViewSet):
+User = get_user_model()
+
+
+class UpdateHookMixin(object):
+    """Mixin class to send update information to the websocket server."""
+
+    def _build_hook_url(self, obj):
+        model_name = 'user' if isinstance(obj, User) else obj.__class__.__name__.lower()
+        return "{}://{}/{}/{}".format(
+            'https' if settings.WEBSOCKET_SECURE else 'http',
+            settings.WEBSOCKET_SERVER, model_name, obj.pk
+        )
+
+    def _send_hook_request(self, obj, method):
+        url = self._build_hook_url(obj)
+        if method in ('POST', 'PUT', 'PATCH'):
+            serializer = self.get_serializer(obj)
+            render = JSONRenderer()
+            context = {'request': self.request}
+            body = render.render(serializer.data, renderer_context=context)
+        else:
+            body = None
+
+        headers = {
+            'content-type': 'application/json',
+            'X-Signature': self._build_hook_signature(method, url, body)
+        }
+        try:
+            response = requests.request(method, url, data=body, timeout=0.5, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.ConnectionError:
+            pass
+        except requests.exceptions.Timeout:
+            pass
+        except requests.exceptions.RequestException:
+            # 4xx or 5xx
+            pass
+
+    def _build_hook_signature(self, method, url, body):
+        signer = TimestampSigner(settings.WEBSOCKET_SECRET)
+        value = '{method}:{url}:{body}'.format(
+            method=method.lower(),
+            url=url,
+            body=hashlib.sha256(body or b'').hexdigest()
+        )
+        return signer.sign(value)
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        self._send_hook_request(serializer.instance, 'POST')
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        self._send_hook_request(serializer.instance, 'PUT')
+
+    def perform_destroy(self, instance):
+        self._send_hook_request(instance, 'DELETE')
+        super().perform_destroy(instance)
+
+
+class InsViewSet(UpdateHookMixin, viewsets.ModelViewSet):
     queryset = Ins.objects.all()
     serializer_class = InsSerializer
     lookup_value_regex = '[0-9a-f-]{36}'
