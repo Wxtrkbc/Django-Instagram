@@ -61,5 +61,13 @@ class Comment(models.Model):
     body = models.CharField(max_length=256, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        # do_something_before()
+        super(Comment, self).save(*args, **kwargs)  # Call the "real" save() method.
+        # do_something_after()
+
+    def delete(self, *args, **kwargs):
+        super(Comment, self).save(*args, **kwargs)
+
     def __str__(self):
         return '{}:{}'.format(self.type, self.body)

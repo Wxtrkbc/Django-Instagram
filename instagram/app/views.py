@@ -21,6 +21,7 @@ from util import errors, const
 from util.exception import INSException
 from util.response import json_response, empty_response
 from util.schema import get_object_or_400, check_keys, validate_value
+from util.hook_ import send_hook_request
 from infrastructure.queue_cl import QueueManager
 
 
@@ -28,7 +29,10 @@ User = get_user_model()
 
 
 class UpdateHookMixin(object):
-    """Mixin class to send update information to the websocket server."""
+    """
+    Mixin class to send update information to the websocket server.
+    For django-rest-framework.
+    """
 
     def _build_hook_url(self, obj):
         model_name = 'user' if isinstance(obj, User) else obj.__class__.__name__.lower()
@@ -84,7 +88,7 @@ class UpdateHookMixin(object):
         super().perform_destroy(instance)
 
 
-class InsViewSet(UpdateHookMixin, viewsets.ModelViewSet):
+class InsViewSet(viewsets.ModelViewSet):
     queryset = Ins.objects.all()
     serializer_class = InsSerializer
     lookup_value_regex = '[0-9a-f-]{36}'
@@ -122,7 +126,9 @@ class InsViewSet(UpdateHookMixin, viewsets.ModelViewSet):
                 validate_value(data['type'], const.COMMENT_TYPES)
             data.update({'user': request.user, 'ins': ins})
             comment = Comment.objects.create(**data)
-            return json_response(CommentSerializer(comment).data)
+            data = CommentSerializer(comment).data
+            send_hook_request(comment, method='POST', context=request, data=data)
+            return json_response(data)
 
     @transaction.atomic
     def create_ins(self, request):
